@@ -1,0 +1,13 @@
+{
+  "appId": "com.smartcreator.app",
+  "appName": "Smart Creator 2026",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

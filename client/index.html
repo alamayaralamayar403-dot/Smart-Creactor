@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>نظام المبدع الذكي 2026 - Smart Creator System</title>
+    <meta name="description" content="تطبيق متكامل لإنتاج محتوى عالي الجودة 5 مرات أسرع مع الذكاء الاصطناعي" />
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Smart Creator" />
+    <meta name="application-name" content="Smart Creator" />
+    <meta name="msapplication-TileColor" content="#1e40af" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Smart Creator System 2026" />
+    <meta property="og:description" content="Produce professional content 5x faster with AI-powered tools" />
+    <meta property="og:image" content="https://tiny-queijadas-60d111.netlify.app/icon-512.png" />
+    <meta property="og:url" content="https://tiny-queijadas-60d111.netlify.app" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Smart Creator System 2026" />
+    <meta name="twitter:description" content="Produce professional content 5x faster" />
+    <meta name="twitter:image" content="https://tiny-queijadas-60d111.netlify.app/icon-512.png" />
+    <link rel="manifest" href="/manifest-v2.json" />
+    <link rel="alternate" hreflang="ar" href="https://tiny-queijadas-60d111.netlify.app/ar" />
+    <link rel="canonical" href="https://tiny-queijadas-60d111.netlify.app" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered:', reg))
+            .catch(err => console.log('SW registration failed:', err));
+        });
+      }
+    </script>
+    <script
+      defer
+      src="%VITE_ANALYTICS_ENDPOINT%/umami"
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+  </body>
+
+</html>
