@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Lock, CheckCircle, AlertCircle } from "lucide-react";
+import { Lock, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 interface LockScreenProps {
   onUnlock: (code: string) => void;
@@ -15,13 +16,29 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   const [error, setError] = useState("");
   const [showInfo, setShowInfo] = useState(true);
 
-  // أكواد التفعيل الصحيحة - مبسطة وسهلة التذكر
-  // هذه الأكواس موجهة للمشترين من Gumroad
-  const VALID_CODES = [
-    "SMART2026", // كود تجريبي رئيسي
-    "CREATOR2026", // كود تجريبي بديل
-    "SMARTCREATOR2026", // كود تجريبي موسع
-  ];
+  // استخدام tRPC mutation للتحقق من الكود
+  const verifyCodeMutation = trpc.codes.verify.useMutation({
+    onSuccess: (result) => {
+      if (result.valid) {
+        // حفظ الكود في localStorage
+        localStorage.setItem("app_activation_code", activationCode.toUpperCase());
+        localStorage.setItem("app_unlock_time", new Date().toISOString());
+
+        toast.success("تم تفعيل التطبيق بنجاح!");
+        onUnlock(activationCode.toUpperCase());
+      } else {
+        setError(result.message || "كود التفعيل غير صحيح");
+        toast.error(result.message || "كود تفعيل غير صحيح");
+      }
+      setIsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Verification error:", error);
+      setError("حدث خطأ أثناء التحقق من الكود. يرجى المحاولة مرة أخرى.");
+      toast.error("خطأ في الاتصال بالخادم");
+      setIsLoading(false);
+    },
+  });
 
   const handleActivate = async () => {
     setError("");
@@ -33,24 +50,16 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
     setIsLoading(true);
 
-    // محاكاة التحقق من الكود (في الواقع، يجب أن يكون هناك اتصال بالخادم)
-    setTimeout(() => {
-      const code = activationCode.toUpperCase().trim();
-
-      if (VALID_CODES.includes(code)) {
-        // حفظ الكود في localStorage
-        localStorage.setItem("app_activation_code", code);
-        localStorage.setItem("app_unlock_time", new Date().toISOString());
-
-        toast.success("تم تفعيل التطبيق بنجاح!");
-        onUnlock(code);
-      } else {
-        setError("كود التفعيل غير صحيح. يرجى المحاولة مرة أخرى.");
-        toast.error("كود تفعيل غير صحيح");
-      }
-
+    // استدعاء API للتحقق من الكود
+    try {
+      await verifyCodeMutation.mutateAsync({
+        code: activationCode.toUpperCase().trim(),
+        deviceId: navigator.userAgent, // استخدام user agent كـ device ID
+      });
+    } catch (err) {
+      console.error("Error verifying code:", err);
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -78,7 +87,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-2">تفعيل التطبيق</h2>
             <p className="text-muted-foreground text-sm">
-              أدخل كود التفعيل الذي تلقيته عند الشراء من Gumroad
+              أدخل كود التفعيل الذي تلقيته عند الشراء
             </p>
           </div>
 
@@ -100,7 +109,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
             </label>
             <Input
               type="text"
-              placeholder="أدخل الكود هنا"
+              placeholder="أدخل رمز التفعيل الخاص بك هنا"
               value={activationCode}
               onChange={(e) => {
                 setActivationCode(e.target.value);
@@ -137,7 +146,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
               <ul className="space-y-2 text-sm text-blue-800">
                 <li className="flex gap-2">
                   <span>✓</span>
-                  <span>الكود الذي تلقيته عند الشراء من Gumroad</span>
+                  <span>الكود الذي تلقيته عند الشراء</span>
                 </li>
                 <li className="flex gap-2">
                   <span>✓</span>
