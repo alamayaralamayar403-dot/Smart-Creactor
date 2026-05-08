@@ -6,6 +6,13 @@
   NODE_VERSION = "22.13.0"
   NODE_ENV = "production"
 
+# Redirect API calls to the server function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server:splat"
+  status = 200
+
+# SPA redirect - catch all other routes and serve index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
