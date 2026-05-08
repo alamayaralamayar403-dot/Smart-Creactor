@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { InsertUser, users, customers, InsertCustomer, orders, InsertOrder, files, InsertFile, analytics, InsertAnalytics, activationCodes, salesWebhooks, emailLogs } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -9,7 +10,8 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const client = postgres(process.env.DATABASE_URL);
+      _db = drizzle(client);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -68,7 +70,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -193,7 +196,8 @@ export async function updateActivationCodeStatus(code: string, status: string, d
     if (deviceId) updateData.deviceId = deviceId;
   }
   
-  return db.update(activationCodes).set(updateData).where(eq(activationCodes.code, code));
+  await db.update(activationCodes).set(updateData).where(eq(activationCodes.code, code));
+  return await db.select().from(activationCodes).where(eq(activationCodes.code, code)).limit(1);
 }
 
 export async function getActivationCodesByEmail(email: string) {
