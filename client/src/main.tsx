@@ -62,22 +62,46 @@ window.addEventListener('error', (event) => {
   console.error('[Global Error]', event.error);
 });
 
-// Determine API URL safely
-const getApiUrl = () => {
-  // In production on Netlify, use relative path
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+// Determine API URL safely - always use relative path for same-origin requests
+const getApiUrl = (): string => {
+  // Always use relative path in browser to avoid CORS and URL validation issues
+  return '/api/trpc';
+};
+
+// Validate and sanitize URL to prevent Invalid URL errors
+const validateUrl = (url: string): string => {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.error('[API URL Error] URL is empty, using fallback');
     return '/api/trpc';
   }
-  // In development, use environment variable or localhost
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000/api/trpc';
+
+  try {
+    // For relative URLs, construct full URL for validation
+    if (url.startsWith('/')) {
+      new URL(url, window.location.origin);
+    } else {
+      new URL(url);
+    }
+    return url;
+  } catch (error) {
+    console.error('[API URL Error] Invalid URL:', url, error);
+    return '/api/trpc';
+  }
 };
+
+const apiUrl = validateUrl(getApiUrl());
 
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: getApiUrl(),
+      url: apiUrl,
       transformer: superjson,
       fetch(input, init) {
+        // Ensure input is a valid URL string
+        if (typeof input !== 'string' || !input) {
+          throw new Error('[Fetch Error] Invalid URL provided to fetch');
+        }
+
         return globalThis.fetch(input, {
           ...(init ?? {}),
           credentials: "include",
